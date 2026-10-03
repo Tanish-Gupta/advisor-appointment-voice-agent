@@ -1,0 +1,88 @@
+# Chat templates (LLD 2.9). One chat `text` per ID: warm, conversational copy that can be
+# spoken as-is. Bold-only markdown, no option menus, full IST slot strings, bare URLs only in
+# SECURE_LINK. Params are whitelisted: topic, slot, slot1, slot2, pref_label, code, secure_url,
+# ttl, edu_links, reason, old_slot, guide, windows, asked_day, requested, suggested.
+
+GREET: "Hi there! I can set up a quick, tentative call with one of our human advisors for you."
+DISCLAIMER: "Just so you know, I share general information only — **not investment advice** — and please don't type personal details like your phone, email or account numbers here."
+DISCLAIMER_ASK_ACK: "Is that okay with you?"
+DISCLAIMER_NEED_ACK: "Happy to help with that! Before I do, I just need a quick okay that you're fine with the note above — informational only, **not investment advice**."
+ACK_THANKS: "Great, thanks!"
+ASK_HOW_HELP: "What can I do for you? I can book a call with an advisor, move or cancel one you already have, tell you what to bring, or see when advisors are free."
+CANNOT_PROCEED_WITHOUT_ACK: "No worries — I can only help once that note is okay with you, so I'll stop here."
+GOODBYE: "Thanks for chatting — have a great day!"
+SESSION_ENDED: "This chat has wrapped up. Start a new one anytime if you need anything else."
+
+CLARIFY_INTENT: "Sorry, I didn't quite get that. I can book a call with an advisor, move or cancel an existing one, tell you what to bring, or check when advisors are free — what would you like?"
+STUB_HELP: "In this build, type commands like: book, reschedule NL-A742, cancel NL-A742, prepare topic kyc, availability time tuesday, topic sip, time tuesday afternoon, 1 or 2, yes / no, repeat, stop."
+FALLBACK_SECURE_LINK: "I'm having a bit of trouble understanding, sorry. You can also request an advisor call back later through our secure website."
+
+ASK_TOPIC: "Sure! What would you like to talk to the advisor about? For example KYC or onboarding, SIPs and mandates, statements and tax documents, withdrawals, or account changes like updating a nominee."
+TOPIC_OPTIONS: "Hmm, I'm not sure which topic that is. Is it about KYC or onboarding, SIPs and mandates, statements and tax documents, withdrawals and timelines, or account changes like a nominee?"
+TOPIC_ACK: "Got it — **{topic}**."
+ASK_PREF: "When would suit you? Something like 'Tuesday afternoon' or 'tomorrow at 11' works — all times are IST."
+PREF_UNCLEAR: "Sorry, I didn't catch a day or time there. When would you like to talk — say, 'Tuesday afternoon' or 'tomorrow morning'? (All times are IST.)"
+PREF_OUT_OF_RANGE: "I can only book within the next two weeks — is there a day in that window that works for you? (All times are IST.)"
+PREF_NON_WORKING_DAY: "{asked_day} is a weekend, and advisors work Monday to Friday, 9 AM to 6 PM IST. Shall I check **{suggested}** instead, or would another weekday suit you better?"
+PREF_WEEKDAYS_ONLY: "Advisors work Monday to Friday, 9 AM to 6 PM IST. Which weekday would suit you?"
+PREF_OUTSIDE_HOURS: "Advisors are available between 9 AM and 6 PM IST on weekdays. What time in that range works for you?"
+EXACT_TIME_TAKEN: "{requested} is already taken, but here's what's close."
+ASK_OTHER_PREF: "No problem! What other day or time would suit you? (All times are IST.)"
+NO_MATCH_TRY_OTHER: "Hmm, nothing's free for {pref_label} (IST). Could another day or time work?"
+
+OFFER_TWO: "I've got two times open (IST): 1) **{slot1}** or 2) **{slot2}**. Which suits you better?"
+OFFER_ONE: "I've got **{slot1}** free. Shall I hold it for you?"
+OFFER_REPROMPT: "Which one works better — the first or the second? Or if neither suits, just tell me another day or time."
+CONFIRM_READBACK: "Just to double-check: a **{topic}** call on **{slot}**. Shall I pencil that in?"
+CONFIRM_REPROMPT: "Shall I go ahead and pencil that in?"
+EXECUTION_NOT_ENABLED: "Booking isn't switched on in this build yet."
+BOOKED: "You're all set! I've pencilled in your **{topic}** call for **{slot}**."
+READ_CODE: "Your booking code is **{code}** — keep it handy in case you want to move or cancel."
+SECURE_LINK: "To finish up, please add your contact details through this secure link (valid for {ttl}) rather than here in the chat: {secure_url}"
+TOOL_RETRY: "Sorry, I couldn't place the hold just now. Want me to try again?"
+SLOT_JUST_TAKEN: "Oh, sorry — that slot was just taken by someone else."
+
+PII_DEFLECT: "For your safety, please don't share personal details here — you'll get a secure link for that at the end."
+SAFE_FALLBACK: "Sorry, something went wrong on my side. Let's try that again."
+
+# --- Phase 5: waitlist (LLD 5.1) ---------------------------------------------------------------
+NO_MATCH_WAITLIST: "Nothing's free for {pref_label} (IST), so I've put you on the advisor waitlist for **{topic}** — an advisor will reach out with a time."
+READ_WAITLIST_CODE: "Your waitlist code is **{code}** — keep it handy in case you want to cancel."
+WAITLIST_FAILED: "Sorry, I couldn't add you to the waitlist just now. Could another day or time work? (All times are IST.)"
+
+# --- Phase 5: investment-advice refusal (LLD 5.2) ----------------------------------------------
+ADVICE_REFUSAL: "I'm not able to give investment advice or recommend products, sorry — but a human advisor can talk it through with you."
+EDU_LINKS: "If you'd like to read up in the meantime, these are good places to start: {edu_links}"
+ADVICE_REFUSAL_SHORT: "As I mentioned, I can't give investment advice here."
+PIVOT_OFFER: "Shall we pick up where we left off?"
+PIVOT_OFFER_NEW: "Want me to set up a call with an advisor so you can ask them directly?"
+PIVOT_REPROMPT: "Shall we carry on with the booking?"
+
+# --- Phase 6: reschedule / cancel (LLD 6.1, 6.2) -----------------------------------------------
+ASK_CODE: "Sure! What's your booking code? It looks something like NL-A742."
+ASK_CODE_REPROMPT: "I just need your booking code — something like NL-A742. Nothing else needed."
+CODE_NOT_FOUND: "Hmm, I couldn't find a booking with code {code}. Could you double-check it?"
+CODE_NOT_FOUND_GIVE_UP: "Sorry, I still couldn't find that booking."
+CODE_CANCELLED: "Booking {code} has already been cancelled."
+CODE_LOOKUP_NOT_ENABLED: "Sorry, changing an existing booking isn't switched on in this build yet."
+WAITLIST_NO_RESCHEDULE: "{code} is a waitlist request, so there's no slot to move yet — an advisor will propose a time."
+CANNOT_RESCHEDULE: "Sorry, booking {code} can't be moved any more."
+CODE_FOUND: "Found it — your **{topic}** call on **{old_slot}**."
+ASK_NEW_PREF: "When would you like to move it to? (All times are IST.)"
+RESCHEDULE_READBACK: "So I'll move your **{topic}** call from **{old_slot}** to **{slot}**. Sound good?"
+RESCHEDULED: "Done! Your **{topic}** call has been moved to **{slot}**."
+CHANGE_RETRY: "Sorry, I couldn't update the booking just now. Want me to try again?"
+CANCEL_READBACK: "Just to confirm, you'd like to cancel your **{topic}** call on **{old_slot}** (booking {code})?"
+CANCEL_READBACK_WAITLIST: "Just to confirm, you'd like to cancel your waitlist request for **{topic}** (code {code})?"
+CANCELLED: "Done — booking {code} is cancelled and the advisor's hold has been released."
+CANCEL_ABORTED: "No problem — booking {code} stays as it is."
+CANCEL_RETRY: "Sorry, I couldn't cancel just now. Want me to try again?"
+
+# --- Phase 6: what to prepare / availability (LLD 6.3, 6.4) ------------------------------------
+PREP_ASK_TOPIC: "Happy to help! Which topic is your call about — KYC or onboarding, SIPs and mandates, statements and tax documents, withdrawals, or account changes like a nominee?"
+PREP_GUIDE: "For a **{topic}** call, {guide}"
+OFFER_TO_BOOK: "Would you like me to book a call with an advisor?"
+ANYTHING_ELSE: "Anything else I can help with?"
+AVAILABILITY_LIST: "Here's what's open (IST): {windows}."
+AVAILABILITY_NONE: "Nothing's free for {pref_label} (IST), sorry. Want me to check another day?"
+ASK_DAY_FOR_AVAILABILITY: "Sure — which day should I check? Something like 'Tuesday' or 'tomorrow afternoon'. (All times are IST.)"

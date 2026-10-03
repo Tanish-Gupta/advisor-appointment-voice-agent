@@ -1,0 +1,292 @@
+<!doctype html>
+<!--
+THESIS: The conversation writes a pre-booking slip in real time. Talk on the left, the outcome
+on the right. Refuses the plain chat log where the booking is buried in prose.
+OWN-WORLD: Counter-slip / PNR ticket. Cool green paper (#F3F5F1), ink (#14231E), a single
+ledger-green accent (#0E6B52), marigold rubber stamp only for TENTATIVE/WAITLIST, a perforated
+slip edge, tabular figures, mono only for the booking code.
+STORY: The user sees exactly what is being booked as they speak or type, picks a slot from real
+cards, and leaves with a stamped slip: code, IST time, secure link.
+FIRST VIEWPORT: Header with mode switch + live IST clock; conversation column (about 62%); slip
+column (about 38%) on the right; composer pinned bottom-left with chips above it.
+FORM: Operate surface. Static mockup with synthetic data (docs/ux-design.md).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>UX prototype · Advisor appointments</title>
+<style>
+  :root {
+    --paper: #f3f5f1; --surface: #fff; --ink: #14231e; --ink-2: #4a5a53; --rule: #d5ddd7;
+    --accent: #0e6b52; --accent-soft: #e3f0ea; --stamp: #8a4f00; --stamp-soft: #fff1d6;
+    --alert: #b42318; --radius: 12px; --ease: cubic-bezier(.16, 1, .3, 1);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-variant-numeric: tabular-nums; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* prototype scene switcher (not part of the product) */
+  .proto { position: sticky; top: 0; z-index: 5; display: flex; gap: 8px; align-items: center;
+    padding: 8px 16px; background: var(--ink); color: #fff; font-size: 13px; }
+  .proto span { opacity: .7; margin-right: 8px; }
+  .proto button { background: transparent; border: 1px solid #ffffff55; color: #fff;
+    border-radius: 999px; padding: 4px 12px; }
+  .proto button[aria-pressed="true"] { background: #fff; color: var(--ink); }
+
+  .app { max-width: 1180px; margin: 0 auto; min-height: calc(100vh - 44px);
+    display: grid; grid-template-rows: auto 1fr; }
+  .app.narrow { max-width: 390px; border-inline: 1px solid var(--rule); }
+
+  header { display: flex; align-items: center; gap: 16px; padding: 16px 24px;
+    border-bottom: 1px solid var(--rule); }
+  header h1 { font-size: 20px; margin: 0; font-weight: 650; letter-spacing: -.01em; }
+  .modes { display: inline-flex; padding: 3px; background: #e6ebe7; border-radius: 999px; margin-left: auto; }
+  .modes button { border: 0; background: transparent; padding: 6px 16px; border-radius: 999px;
+    font-size: 13px; font-weight: 600; color: var(--ink-2); min-height: 32px; }
+  .modes button[aria-pressed="true"] { background: var(--surface); color: var(--ink);
+    box-shadow: 0 1px 2px rgb(20 35 30 / .12); }
+  .clock { font-size: 13px; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+  .clock::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+
+  .body { display: grid; grid-template-columns: minmax(0, 1fr) 360px; min-height: 0; }
+  .narrow .body { grid-template-columns: 1fr; }
+
+  /* conversation */
+  .convo { display: grid; grid-template-rows: 1fr auto; border-right: 1px solid var(--rule); min-height: 0; }
+  .narrow .convo { border-right: 0; }
+  .log { padding: 28px 32px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
+  .narrow .log { padding: 20px 16px; }
+  .turn { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px; max-width: 620px;
+    animation: rise .25s var(--ease) both; }
+  .mark { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); position: relative; }
+  .mark::after { content: ""; position: absolute; inset: 8px; border-radius: 50%; background: var(--paper); }
+  .turn p { margin: 0 0 8px; max-width: 62ch; }
+  .turn p:last-child { margin-bottom: 0; }
+  .me { align-self: flex-end; max-width: 75%; background: var(--accent); color: #fff;
+    padding: 10px 14px; border-radius: 16px 16px 4px 16px; }
+  .typing { display: inline-flex; gap: 4px; padding: 10px 0; }
+  .typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-2); opacity: .4;
+    animation: dot 1s infinite; }
+  .typing i:nth-child(2) { animation-delay: .15s; } .typing i:nth-child(3) { animation-delay: .3s; }
+
+  .slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 10px 0; }
+  .narrow .slots { grid-template-columns: 1fr; }
+  .slot { text-align: left; background: var(--surface); border: 1px solid var(--rule);
+    border-radius: var(--radius); padding: 12px 14px; min-height: 44px;
+    transition: border-color .2s var(--ease), background .2s var(--ease); }
+  .slot:hover { border-color: var(--accent); }
+  .slot[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .slot small { display: block; font-size: 13px; font-weight: 650; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--ink-2); }
+  .slot strong { font-size: 28px; letter-spacing: -.01em; font-weight: 650; }
+  .slot em { font-style: normal; font-size: 13px; color: var(--ink-2); margin-left: 4px; }
+  .inline-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .btn { border-radius: 999px; padding: 8px 16px; min-height: 40px; font-weight: 600; border: 1px solid var(--rule);
+    background: var(--surface); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .composer { padding: 12px 24px 16px; border-top: 1px solid var(--rule); background: var(--paper); }
+  .narrow .composer { padding: 10px 12px 14px; }
+  .chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+  .chip { flex: none; border: 1px solid var(--rule); background: var(--surface); border-radius: 999px;
+    padding: 6px 14px; font-size: 15px; min-height: 36px; }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .field { display: flex; align-items: flex-end; gap: 8px; background: var(--surface);
+    border: 1px solid var(--rule); border-radius: 22px; padding: 6px 6px 6px 16px; }
+  .field:focus-within { border-color: var(--accent); }
+  .field textarea { flex: 1; border: 0; resize: none; font: inherit; padding: 8px 0; outline: none;
+    background: transparent; color: var(--ink); }
+  .icon { width: 36px; height: 36px; border-radius: 50%; border: 0; display: grid; place-items: center;
+    background: transparent; color: var(--ink-2); }
+  .icon.send { background: var(--accent); color: #fff; }
+  .icon svg { width: 18px; height: 18px; }
+  .foot { font-size: 13px; color: var(--ink-2); margin: 8px 4px 0; }
+
+  /* slip */
+  .slip-wrap { padding: 28px 24px; }
+  .narrow .slip-wrap { display: none; }
+  .slip { position: relative; background: var(--surface); border-radius: 4px 4px var(--radius) var(--radius);
+    padding: 22px 20px 18px; box-shadow: 0 8px 24px -12px rgb(20 35 30 / .25);
+    -webkit-mask: radial-gradient(circle 5px at 8px 0, #0000 98%, #000) -8px 0 / 16px 100% repeat-x;
+            mask: radial-gradient(circle 5px at 8px 0, #0000 98%, #000) -8px 0 / 16px 100% repeat-x; }
+  .slip h2 { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; margin: 0; }
+  .step { font-size: 13px; color: var(--ink-2); margin: 2px 0 14px; }
+  .progress { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 16px; }
+  .progress i { height: 3px; border-radius: 2px; background: var(--rule); }
+  .progress i.on { background: var(--accent); }
+  dl { margin: 0; }
+  .row { display: grid; grid-template-columns: 84px 1fr; gap: 8px; padding: 10px 0;
+    border-top: 1px dashed var(--rule); }
+  dt { font-size: 13px; color: var(--ink-2); }
+  dd { margin: 0; font-weight: 600; }
+  dd.empty { color: var(--ink-2); font-weight: 400; font-style: italic; }
+  .slip.stamped h2, .slip.stamped .step { padding-right: 112px; }
+  .row.fresh dd { animation: ink 1.2s var(--ease); }
+  .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 20px; letter-spacing: .08em; }
+  .copy { margin-left: 8px; font-size: 13px; border: 1px solid var(--rule); background: var(--surface);
+    border-radius: 999px; padding: 2px 10px; vertical-align: middle; }
+  .stamp { position: absolute; right: 16px; top: 18px; transform: rotate(-8deg); color: var(--stamp);
+    background: var(--stamp-soft); border: 2px solid var(--stamp); border-radius: 6px; padding: 2px 8px;
+    font-size: 13px; font-weight: 800; letter-spacing: .12em; animation: stamp .35s var(--ease) both; }
+  .link { display: block; text-align: center; margin-top: 14px; text-decoration: none; }
+  .note { font-size: 13px; color: var(--ink-2); margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--rule); }
+
+  .strip { display: none; }
+  .narrow .strip { display: flex; gap: 8px; align-items: center; padding: 10px 16px; font-size: 13px;
+    background: var(--surface); border-bottom: 1px solid var(--rule); }
+  .strip b { font-weight: 650; }
+
+  /* voice */
+  .voice { display: grid; place-items: center; align-content: center; gap: 28px; padding: 40px 32px;
+    border-right: 1px solid var(--rule); text-align: center; }
+  .narrow .voice { border-right: 0; padding: 32px 16px; }
+  .ring { width: 168px; height: 168px; border-radius: 50%; border: 0; position: relative;
+    background: var(--accent); display: grid; place-items: center; }
+  .ring::before, .ring::after { content: ""; position: absolute; inset: -14px; border-radius: 50%;
+    border: 2px solid var(--accent); opacity: .35; animation: listen 1.6s var(--ease) infinite; }
+  .ring::after { inset: -30px; opacity: .18; animation-delay: .25s; }
+  .ring svg { width: 44px; height: 44px; color: #fff; }
+  .state-label { font-size: 13px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+  .caption { max-width: 30ch; font-size: 28px; letter-spacing: -.01em; line-height: 1.45; margin: 0; }
+  .caption b { font-weight: 650; }
+  .heard { color: var(--ink-2); margin: 0; }
+  .heard span { color: var(--ink); }
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .btn.end { color: var(--alert); }
+
+  @media (max-width: 959px) {
+    .body { grid-template-columns: 1fr; }
+    .convo, .voice { border-right: 0; }
+    .slip-wrap { display: none; }
+    .strip { display: flex; gap: 8px; align-items: center; padding: 10px 16px; font-size: 13px;
+      background: var(--surface); border-bottom: 1px solid var(--rule); }
+    .log { padding: 20px 16px; }
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
+  @keyframes dot { 50% { opacity: 1; transform: translateY(-2px); } }
+  @keyframes ink { from { background: var(--accent-soft); } }
+  @keyframes stamp { from { opacity: 0; transform: rotate(-8deg) scale(1.4); } }
+  @keyframes listen { 50% { transform: scale(1.06); opacity: .1; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<nav class="proto" aria-label="Prototype scenes">
+  <span>Prototype · synthetic data</span>
+  <button data-scene="offer" aria-pressed="true">Chat · pick a slot</button>
+  <button data-scene="booked" aria-pressed="false">Chat · booked</button>
+  <button data-scene="voice" aria-pressed="false">Voice · listening</button>
+  <button data-scene="mobile" aria-pressed="false">Mobile · chat</button>
+</nav>
+<div id="root"></div>
+
+<template id="t-header">
+  <header>
+    <h1>Advisor appointments</h1>
+    <div class="modes" role="group" aria-label="Mode">
+      <button aria-pressed="{chat}">Chat</button><button aria-pressed="{voice}">Voice</button>
+    </div>
+    <div class="clock">13:18 IST</div>
+  </header>
+</template>
+
+<script>
+const mic = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
+const send = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+
+const header = (voice) => document.getElementById("t-header").innerHTML
+  .replace("{chat}", String(!voice)).replace("{voice}", String(voice));
+
+const slip = ({ step, label, filled, slot, code, fresh }) => `
+  <aside class="slip-wrap" aria-label="Pre-booking slip">
+    <div class="slip${code ? " stamped" : ""}">
+      ${code ? '<span class="stamp">Tentative</span>' : ""}
+      <h2>Pre-booking slip</h2>
+      <p class="step">Step ${step} of 4 · ${label}</p>
+      <div class="progress">${[1,2,3,4].map(i => `<i class="${i <= step ? "on" : ""}"></i>`).join("")}</div>
+      <dl>
+        <div class="row"><dt>Topic</dt><dd>SIPs &amp; mandates</dd></div>
+        <div class="row"><dt>Asked for</dt><dd>Tue 6 Oct · afternoon</dd></div>
+        <div class="row ${fresh === "slot" ? "fresh" : ""}"><dt>Slot</dt>${slot ? `<dd>Tuesday, 6 October 2026<br>2:30 PM IST</dd>` : '<dd class="empty">Pick one of the two times</dd>'}</div>
+        <div class="row ${fresh === "code" ? "fresh" : ""}"><dt>Code</dt>${code ? '<dd><span class="code">NL-A742</span><button class="copy">Copy</button></dd>' : '<dd class="empty">Given when you confirm</dd>'}</div>
+        <div class="row"><dt>Contact</dt>${code ? '<dd>Add via secure link</dd>' : '<dd class="empty">After booking, via secure link</dd>'}</div>
+      </dl>
+      ${code ? '<a class="btn primary link" href="#">Add contact details securely</a>' : ""}
+      <p class="note">No personal details in this conversation. Informational only — not investment advice.</p>
+    </div>
+  </aside>`;
+
+const composer = (chips, placeholder = "Message…") => `
+  <div class="composer">
+    <div class="chips">${chips.map(c => `<button class="chip">${c}</button>`).join("")}</div>
+    <div class="field">
+      <textarea rows="1" aria-label="Message" placeholder="${placeholder}"></textarea>
+      <button class="icon" aria-label="Switch to voice">${mic}</button>
+      <button class="icon send" aria-label="Send">${send}</button>
+    </div>
+    <p class="foot">Times are IST. Please don't share phone, email or account numbers.</p>
+  </div>`;
+
+const agent = (html) => `<div class="turn"><span class="mark" aria-hidden="true"></span><div>${html}</div></div>`;
+const me = (t) => `<div class="me">${t}</div>`;
+
+const offerLog = `
+  ${agent("<p>Hi there! I can set up a quick, tentative call with one of our human advisors for you.</p><p>Just so you know, I share general information only — <b>not investment advice</b>. Is that okay with you?</p>")}
+  ${me("Yes — I want to talk about my SIP mandate, Tuesday afternoon")}
+  ${agent(`<p>Great, thanks! Got it — <b>SIPs &amp; mandates</b>.</p><p>I've got two times open on Tuesday:</p>
+    <div class="slots" role="group" aria-label="Available slots">
+      <button class="slot" aria-pressed="false"><small>Tue 6 Oct</small><strong>1:00 PM</strong><em>IST</em></button>
+      <button class="slot" aria-pressed="false"><small>Tue 6 Oct</small><strong>2:30 PM</strong><em>IST</em></button>
+    </div><p>Which suits you better?</p>`)}`;
+
+const strip = (t) => `<div class="strip">▸ ${t}</div>`;
+const scenes = {
+  offer: () => `<div class="app">${header(false)}${strip("<b>Step 3/4</b> · SIPs &amp; mandates · Tue afternoon")}<div class="body">
+    <section class="convo"><div class="log" aria-live="polite">${offerLog}</div>
+    ${composer(["The first one", "The second one", "Another time"])}</section>
+    ${slip({ step: 3, label: "Pick a time" })}</div></div>`,
+
+  booked: () => `<div class="app">${header(false)}${strip("<b>Booked</b> · NL-A742 · Tue 6 Oct, 2:30 PM IST")}<div class="body">
+    <section class="convo"><div class="log" aria-live="polite">${offerLog.replace('aria-pressed="false"><small>Tue 6 Oct</small><strong>2:30', 'aria-pressed="true"><small>Tue 6 Oct</small><strong>2:30')}
+      ${me("2:30 works")}
+      ${agent('<p>Just to double-check: a <b>SIPs &amp; mandates</b> call on <b>Tuesday, 6 October 2026, 2:30 PM IST</b>. Shall I pencil that in?</p><div class="inline-actions"><button class="btn primary">Yes, book it</button><button class="btn">Change time</button></div>')}
+      ${me("Yes, book it")}
+      ${agent("<p>You're all set! Your code is <b>NL-A742</b> — it's on your slip.</p><p>Add your contact details through the secure link on the slip, rather than here in the chat.</p>")}
+    </div>${composer(["What should I bring?", "Move it", "I'm done"])}</section>
+    ${slip({ step: 4, label: "Booked (tentative)", slot: true, code: true, fresh: "code" })}</div></div>`,
+
+  voice: () => `<div class="app">${header(true)}${strip("<b>Step 3/4</b> · SIPs &amp; mandates · Tue afternoon")}<div class="body">
+    <section class="voice" aria-live="polite">
+      <span class="state-label">Listening</span>
+      <button class="ring" aria-label="Tap to stop listening">${mic}</button>
+      <p class="caption">I've got two times open on Tuesday: <b>1 PM</b> or <b>2:30 PM IST</b>. Which suits you better?</p>
+      <p class="heard">You: <span>the second one…</span></p>
+      <div class="controls"><button class="btn">Mute</button><button class="btn">Type instead</button><button class="btn end">End</button></div>
+    </section>
+    ${slip({ step: 3, label: "Pick a time" })}</div></div>`,
+
+  mobile: () => `<div class="app narrow">${header(false)}
+    ${strip("<b>Step 3/4</b> · SIPs &amp; mandates · Tue afternoon")}
+    <div class="body"><section class="convo"><div class="log" aria-live="polite">${offerLog}
+      ${agent('<span class="typing" aria-label="Agent is typing"><i></i><i></i><i></i></span>')}</div>
+    ${composer(["The first one", "The second one", "Another time"])}</section></div></div>`,
+};
+
+const root = document.getElementById("root");
+function show(name) {
+  root.innerHTML = scenes[name]();
+  document.querySelectorAll(".proto button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.scene === name)));
+  root.querySelectorAll(".slot").forEach(s => s.onclick = () => {
+    root.querySelectorAll(".slot").forEach(o => o.setAttribute("aria-pressed", "false"));
+    s.setAttribute("aria-pressed", "true");
+  });
+}
+document.querySelectorAll(".proto button").forEach(b => b.onclick = () => show(b.dataset.scene));
+show("offer");
+</script>
+</body>
+</html>

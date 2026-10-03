@@ -1,0 +1,19 @@
+name: ready_to_confirm_stub
+clock: "2026-10-02T16:00:00+05:30"
+nlu: stub
+turns:
+  - user: null
+    expect_state: disclaimer_ack
+    expect_contains: ["not investment advice"]
+  - user: "yes"
+    expect_state: intent_detect
+  - user: "book"
+    expect_state: topic_confirm
+  - user: "topic sip"
+    expect_state: collect_pref
+  - user: "time tuesday afternoon"
+    expect_state: offer_slots
+    expect_regex: ["Tuesday, 6 October 2026, \\d{1,2}:\\d{2} (AM|PM) IST"]
+  - user: "1"
+    expect_state: confirm_slot
+    expect_contains: ["Shall I pencil that in?"]

@@ -1,0 +1,7 @@
+# Static "what to prepare" checklists (LLD 6.3). Plain facts only: no recommendations, never
+# written by the LLM. Rendered through the PREP_GUIDE template; keep each guide speakable.
+"KYC/Onboarding": "keep your identity proof and an address proof handy, plus a recent photograph. Verification usually completes within 2 to 3 working days. Don't share document numbers in this chat."
+"SIP/Mandates": "note the scheme name, your SIP date and instalment amount, and whether your bank mandate is active. A new bank mandate usually takes 7 to 10 working days to register."
+"Statements/Tax Docs": "note the financial year and which statements you need, for example the account statement, the capital-gains statement or a tax certificate. Most statements can also be downloaded from your account dashboard."
+"Withdrawals & Timelines": "note the scheme, the approximate amount and whether it is a full or partial withdrawal. Redemption money is usually credited within 1 to 3 working days, depending on the scheme type."
+"Account Changes/Nominee": "note what you want to change, for example the nominee, address or bank details, and keep the supporting proof handy. You'll submit the details through the secure form, not in this chat."

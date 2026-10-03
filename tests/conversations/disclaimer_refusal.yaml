@@ -1,0 +1,16 @@
+name: disclaimer_refusal
+clock: "2026-10-02T16:00:00+05:30"
+nlu: stub
+turns:
+  - user: null
+    expect_state: disclaimer_ack
+  - user: "book"
+    expect_state: disclaimer_ack
+    expect_contains: ["not investment advice", "quick okay"]
+  - user: "no"
+    expect_state: disclaimer_ack
+    expect_contains: ["not investment advice", "Is that okay with you?"]
+  - user: "no"
+    expect_state: close
+    expect_contains: ["I can only help once that note is okay", "have a great day"]
+    expect_done: true

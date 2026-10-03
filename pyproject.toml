@@ -1,0 +1,93 @@
+[project]
+name = "advisor-agent"
+version = "0.6.0"
+description = "Voice Agent: Advisor Appointment Scheduler (chat-first; Phases 1-6)"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+    "pyyaml>=6.0",
+    # Phase 3 NLU fallback (Gemini). Optional at runtime: without it or without an API key the
+    # hybrid engine runs rules-only.
+    "google-genai>=1.0",
+    # Phase 3B/4: our own FastMCP server backed by real Google Calendar / Docs / Gmail.
+    "fastmcp>=2.10",
+    "google-api-python-client>=2.100",
+    "google-auth>=2.20",
+    "google-auth-oauthlib>=1.0",
+    # Phase 4: PII vault (Fernet) for the secure-link form.
+    "cryptography>=42",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.23",
+    "hypothesis>=6.100",
+    "httpx>=0.27",
+    "ruff>=0.4",
+    "mypy>=1.10",
+    "import-linter>=2.0",
+]
+
+[project.scripts]
+agent-chat = "advisor_agent.channels.chat.cli:main"
+agent-api = "advisor_agent.channels.chat.api:main"
+agent-mcp-server = "advisor_agent.mcp_server.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/advisor_agent"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-m 'not google_live'"
+markers = [
+    "google_live: hits the real Google APIs (needs credentials); run with -m google_live",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "DTZ"]
+
+[[tool.mypy.overrides]]
+module = ["googleapiclient.*", "google_auth_oauthlib.*"]
+ignore_missing_imports = true
+
+[tool.importlinter]
+root_package = "advisor_agent"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Domain has no I/O"
+type = "forbidden"
+source_modules = ["advisor_agent.domain"]
+forbidden_modules = [
+    "advisor_agent.config",
+    "advisor_agent.orchestrator",
+    "advisor_agent.channels",
+    "fastapi",
+    "uvicorn",
+    "yaml",
+]
+
+[[tool.importlinter.contracts]]
+name = "Core never imports channels"
+type = "forbidden"
+source_modules = [
+    "advisor_agent.domain",
+    "advisor_agent.guardrails",
+    "advisor_agent.nlu",
+    "advisor_agent.orchestrator",
+]
+forbidden_modules = ["advisor_agent.channels"]

@@ -1,0 +1,22 @@
+name: pii_deflect
+clock: "2026-10-02T16:00:00+05:30"
+nlu: stub
+turns:
+  - user: null
+    expect_state: disclaimer_ack
+  - user: "yes"
+    expect_state: intent_detect
+  - user: "book"
+    expect_state: topic_confirm
+  - user: "my phone is 98765 43210, call me"
+    expect_state: topic_confirm
+    expect_contains: ["please don't share personal details", "What would you like to talk to the advisor about?"]
+    expect_not_contains: ["98765"]
+  - user: "topic kyc"
+    expect_state: collect_pref
+  - user: "email me at someone@example.com"
+    expect_state: collect_pref
+    expect_contains: ["When would suit you?"]
+  - user: "time monday morning"
+    expect_state: offer_slots
+    expect_regex: ["Monday, 5 October 2026, \\d{1,2}:\\d{2} AM IST"]

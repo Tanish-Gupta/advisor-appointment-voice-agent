@@ -1,0 +1,40 @@
+name: nlu_ambiguous_topic_and_carry_over
+# Phase 3: ambiguous topic -> clarification; "no, tuesday instead" keeps the morning window;
+# "afternoon then" keeps Tuesday.
+clock: "2026-10-02T16:00:00+05:30"
+nlu: rules
+calendar:
+  - "2026-10-06T13:00:00+05:30"
+  - "2026-10-06T14:30:00+05:30"
+  - "2026-10-07T10:00:00+05:30"
+  - "2026-10-07T11:30:00+05:30"
+turns:
+  - user: null
+    expect_state: disclaimer_ack
+  - user: "yes"
+    expect_state: intent_detect
+  - user: "I want to book an appointment"
+    expect_state: topic_confirm
+    expect_contains: ["What would you like to talk to the advisor about?"]
+  - user: "tax on my SIP withdrawal"
+    expect_state: topic_confirm
+    expect_contains: ["not sure which topic"]
+  - user: "the second one"
+    expect_state: collect_pref
+    expect_contains: ["SIP/Mandates"]
+  - user: "wednesday morning"
+    expect_state: offer_slots
+    expect_contains:
+      - "Wednesday, 7 October 2026, 10:00 AM IST"
+      - "Wednesday, 7 October 2026, 11:30 AM IST"
+  - user: "no, tuesday instead"
+    expect_state: collect_pref
+    expect_contains: ["nothing's free", "Tuesday, 6 October 2026 (morning)"]
+  - user: "afternoon then"
+    expect_state: offer_slots
+    expect_contains:
+      - "Tuesday, 6 October 2026, 1:00 PM IST"
+      - "Tuesday, 6 October 2026, 2:30 PM IST"
+  - user: "the second one"
+    expect_state: confirm_slot
+    expect_contains: ["Tuesday, 6 October 2026, 2:30 PM IST", "SIP/Mandates"]

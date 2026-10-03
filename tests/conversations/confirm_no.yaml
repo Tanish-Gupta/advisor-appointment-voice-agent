@@ -1,0 +1,22 @@
+name: confirm_no
+clock: "2026-10-02T16:00:00+05:30"
+nlu: stub
+turns:
+  - user: null
+  - user: "I understand"
+  - user: "book topic nominee time wednesday morning"
+    expect_state: offer_slots
+    expect_regex: ["Wednesday, 7 October 2026, \\d{1,2}:\\d{2} AM IST"]
+  - user: "second"
+    expect_state: confirm_slot
+    expect_contains: ["**Account Changes/Nominee**", "IST**"]
+  - user: "no"
+    expect_state: offer_slots
+  - user: "first"
+    expect_state: confirm_slot
+  - user: "yes"
+    expect_state: confirm_slot
+    expect_contains: ["Booking isn't switched on in this build yet."]
+  - user: "stop"
+    expect_state: close
+    expect_done: true

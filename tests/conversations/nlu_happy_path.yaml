@@ -1,0 +1,28 @@
+name: nlu_happy_path
+# Phase 3 exit: natural phrases (rules NLU, no Gemini) reach "ready to confirm".
+clock: "2026-10-02T16:00:00+05:30"
+nlu: rules
+calendar:
+  - "2026-10-06T13:00:00+05:30"
+  - "2026-10-06T14:30:00+05:30"
+  - "2026-10-07T10:00:00+05:30"
+turns:
+  - user: null
+    expect_state: disclaimer_ack
+    expect_contains: ["not investment advice"]
+  - user: "yes"
+    expect_state: intent_detect
+  - user: "I want to book a consultation about my SIP"
+    expect_state: collect_pref
+    expect_contains: ["SIP/Mandates", "all times are IST"]
+    expect_not_contains: ["In this build, type commands"]
+  - user: "next tuesday afternoon please"
+    expect_state: offer_slots
+    expect_contains:
+      - "Tuesday, 6 October 2026, 1:00 PM IST"
+      - "Tuesday, 6 October 2026, 2:30 PM IST"
+  - user: "the first one"
+    expect_state: confirm_slot
+    expect_contains:
+      - "Tuesday, 6 October 2026, 1:00 PM IST"
+      - "Shall I pencil that in?"

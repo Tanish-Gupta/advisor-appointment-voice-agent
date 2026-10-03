@@ -1,0 +1,21 @@
+name: neither_reoffer
+clock: "2026-10-02T16:00:00+05:30"
+nlu: stub
+calendar:
+  - "2026-10-06T13:00:00+05:30"
+  - "2026-10-06T14:30:00+05:30"
+  - "2026-10-06T15:00:00+05:30"
+turns:
+  - user: null
+  - user: "yes"
+  - user: "book topic statements"
+    expect_state: collect_pref
+  - user: "tuesday afternoon"
+    expect_state: offer_slots
+    expect_contains: ["**Tuesday, 6 October 2026, 1:00 PM IST** or **Tuesday, 6 October 2026, 2:30 PM IST**"]
+  - user: "neither"
+    expect_state: offer_slots
+    expect_contains: ["I've got **Tuesday, 6 October 2026, 3:00 PM IST** free"]
+  - user: "no"
+    expect_state: collect_pref
+    expect_contains: ["What other day or time"]
